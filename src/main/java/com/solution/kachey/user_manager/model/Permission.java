@@ -23,6 +23,14 @@ public class Permission {
     private String apiUrl;
     @NotEmpty(message = "API method is required")
     private String apiMethod;
-    private boolean isMenu = false;
+    private boolean isMenu;
     private String parentReference;
+
+    public Permission(String permissionName, String apiUrl, String apiMethod, boolean isMenu, String parentReference){
+        this.permissionName = permissionName;
+        this.apiUrl=apiUrl;
+        this.isMenu=isMenu;
+        this.apiMethod=apiMethod;
+        this.parentReference=parentReference;
+    }
 }

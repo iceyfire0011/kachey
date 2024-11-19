@@ -5,7 +5,9 @@ import com.solution.kachey.auth.view_model.RegisterRequest;
 import com.solution.kachey.config.exception.GlobalExceptionHandler;
 import com.solution.kachey.user_manager.Constants;
 import com.solution.kachey.user_manager.exception.InvalidRoleException;
+import com.solution.kachey.user_manager.model.Permission;
 import com.solution.kachey.user_manager.model.Role;
+import com.solution.kachey.user_manager.service.PermissionService;
 import com.solution.kachey.user_manager.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +26,10 @@ import com.solution.kachey.config.jwt.JwtTokenUtil;
 import com.solution.kachey.user_manager.model.User;
 import com.solution.kachey.user_manager.service.UserService;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CancellationException;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -39,6 +44,9 @@ public class AuthController {
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private PermissionService permissionService;
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
@@ -84,11 +92,35 @@ public class AuthController {
             if (Constants.ROLE_SUPER_ADMIN.equals(user.getRole().getRoleName())) {
                 return ResponseEntity.ok(new JwtResponse(token, user.getUsername(), user.getRole().getRoleName()));
             }
-            return ResponseEntity.ok(new JwtResponse(token, user.getUsername(), user.getPermissions()));
+            return ResponseEntity.ok(new JwtResponse(token, user.getUsername(),
+                    user.getPermissions().stream()
+                            .map(Permission::getPermissionName) // Extract the name of each Permission
+                            .distinct() // Ensure no duplicate names
+                            .collect(Collectors.joining(", "))));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
-
+    @PostMapping("/setup")
+    public String setup() {
+        List<Permission> permissions = permissionService.setupPermission();
+        Role newRole = roleService.addRoleByRoleName(Constants.ROLE_SUPER_ADMIN);
+        newRole.setPermissions(permissions);
+        roleService.saveOrUpdate(newRole);
+        Optional<User> user = userService.findByUsername("super_admin");
+        User newUser;
+        if (user.isPresent()) {
+            newUser = user.get();
+        } else {
+            newUser = new User();
+            newUser.setUsername("super_admin");
+            newUser.setPassword("1234");
+            newUser.setEmails(List.of("super_admin@kachey.com"));
+        }
+        newUser.setPermissions(permissions);
+        newUser.setRole(newRole);
+        userService.saveOrUpdate(newUser);
+        return "User " + newUser.getUsername() + " has registered successfully!";
+    }
 }

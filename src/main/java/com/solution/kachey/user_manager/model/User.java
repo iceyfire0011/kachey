@@ -1,11 +1,8 @@
 package com.solution.kachey.user_manager.model;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.solution.kachey.config.validation.UniquePhoneNumbers;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
@@ -43,8 +40,9 @@ public class User {
     @Indexed(unique = true) // Creates a unique index on this field in MongoDB
     private List<@Email(message = "Invalid email format") String> emails;
 
+    @DBRef(lazy = true)
     private Role role;
 
-    @DBRef
-    private Set<Permission> permissions;
+    @DBRef(lazy = true)
+    private List<Permission> permissions;
 }

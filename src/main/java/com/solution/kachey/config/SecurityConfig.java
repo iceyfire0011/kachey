@@ -31,7 +31,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)  // Disable CSRF protection
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()  // Allow access to auth endpoints
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/setup").permitAll()  // Allow access to auth endpoints
                         .requestMatchers("/**").hasAnyRole(Constants.ROLE_SUPER_ADMIN)
                         .requestMatchers("/api/users/profile").authenticated()
                         .requestMatchers("/api/permission/add-permission").hasAnyRole(Constants.ROLE_SUPER_ADMIN, Constants.ROLE_ADMIN)

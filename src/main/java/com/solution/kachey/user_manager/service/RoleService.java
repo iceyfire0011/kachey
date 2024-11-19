@@ -5,7 +5,6 @@ import java.util.Set;
 
 import com.solution.kachey.user_manager.exception.InvalidRoleException;
 import com.solution.kachey.user_manager.model.Permission;
-import com.solution.kachey.user_manager.model.User;
 import com.solution.kachey.user_manager.repo.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +17,10 @@ public class RoleService {
 
     @Autowired
     RoleRepository roleRepository;
+
+    public Role saveOrUpdate(Role role) {
+        return roleRepository.save(role);
+    }
 
     // Helper method to validate role
     public boolean isValidRole(Role role) {
@@ -32,10 +35,10 @@ public class RoleService {
         Role newRole;
         if (existingRole.isPresent()) {
             newRole = existingRole.get();
-        }else {
+        } else {
             newRole = new Role();
             newRole.setRoleName(role.getRoleName());
-            newRole= roleRepository.save(newRole);
+            newRole = roleRepository.save(newRole);
             if (newRole.getId().isEmpty()) {
                 throw new InvalidRoleException("Role has not created");
             }
@@ -43,11 +46,29 @@ public class RoleService {
         return newRole;
     }
 
-    public Optional<Role> findByRoleName(String roleName){
+    public Role addRoleByRoleName(String roleName) {
+        Optional<Role> existingRole = roleRepository.findByRoleName(roleName);
+        Role newRole;
+        if (existingRole.isPresent()) {
+            newRole = existingRole.get();
+        } else {
+            newRole = new Role();
+            newRole.setRoleName(roleName);
+            newRole = roleRepository.save(newRole);
+            if (newRole.getId().isEmpty()) {
+                throw new InvalidRoleException("Role has not created");
+            }
+        }
+        return newRole;
+    }
+
+    public Optional<Role> findByRoleName(String roleName) {
         return roleRepository.findByRoleName(roleName);
     }
 
-    public void defineRolePermissions(Role role, Set<Permission> permissions){
+    public void defineRolePermissions(Role role, Set<Permission> permissions) {
 
     }
+
+
 }

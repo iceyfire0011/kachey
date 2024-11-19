@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 
 import com.solution.kachey.user_manager.model.User;
 import com.solution.kachey.user_manager.repo.UserRepository;
-//01711337079
+
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -73,7 +73,7 @@ public class UserService implements UserDetailsService {
     }
 
     // Combine role-based and user-specific permissions
-    public Set<Permission> addEffectivePermissions(User user, Set<Permission> permissions) {
+    public List<Permission> addEffectivePermissions(User user, List<Permission> permissions) {
         if (!permissions.isEmpty()) {
             user.setPermissions(permissions);
             return user.getPermissions();
@@ -84,5 +84,9 @@ public class UserService implements UserDetailsService {
             return user.getPermissions();
         }
         return user.getPermissions();
+    }
+
+    public void saveOrUpdate(User user) {
+        userRepository.save(user);
     }
 }
