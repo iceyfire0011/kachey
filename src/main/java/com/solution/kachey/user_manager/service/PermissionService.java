@@ -2,6 +2,7 @@ package com.solution.kachey.user_manager.service;
 
 import com.solution.kachey.user_manager.model.Permission;
 import com.solution.kachey.user_manager.repo.PermissionRepository;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,33 +20,39 @@ public class PermissionService {
         return permissionRepository.findByApiMethodAndApiUrl(permission.getApiMethod(), permission.getApiUrl()) != null;
     }
 
-    public Permission addPermission(Permission permission) {
+    public Permission savePermission(Permission permission) {
 
-        return permissionRepository.save(permission);
+       return permissionRepository.save(permission);
     }
 
     public List<Permission> allPermissionList() {
         return permissionRepository.findAll();
     }
 
-    public void deleteAllPermissions() {
-        try {
-            permissionRepository.deleteAll();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete permissions: " + e.getMessage());
-        }
-    }
-
-    public List<Permission> saveAllPermissions(List<Permission> permissions) {
-        return permissionRepository.saveAll(permissions);
-    }
-
-    public List<Permission> setupPermission() {
+    public List<Permission> setupPermissions() {
         return List.of(
                 new Permission("permission-list", "/api/permission/list", "GET", true, ""),
                 new Permission("edit-permission", "/api/permission/edit-permission", "GET", false, ""),
                 new Permission("edit-permission-submit", "/api/permission/edit-permission", "PATCH", false, ""),
                 new Permission("edit-permission-replace", "/api/permission/edit-permission", "PUT", false, "")
         );
+    }
+
+    public Permission findByPermissionName(@NotEmpty(message = "Permission name is required") String permissionName) {
+        return permissionRepository.findByPermissionName(permissionName);
+    }
+
+    public void updatePermission(Permission permission) {
+        // Ensure the permission exists
+        if (permission.getID() == null) {
+            throw new IllegalArgumentException("Permission ID cannot be null for update.");
+        }
+
+        // Save the updated permission back to the database
+        permissionRepository.save(permission);
+    }
+
+    public void deletePermission(Permission existingPermission) {
+        permissionRepository.delete(existingPermission);
     }
 }

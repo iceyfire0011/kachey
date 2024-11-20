@@ -2,6 +2,7 @@ package com.solution.kachey.user_manager.service;
 
 import com.solution.kachey.user_manager.model.Permission;
 import com.solution.kachey.user_manager.model.Role;
+import jakarta.validation.constraints.NotEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -92,5 +93,17 @@ public class UserService implements UserDetailsService {
 
     public List<User> findAllUsers() {
         return userRepository.findAll();
+    }
+
+    public boolean existsByUsername(@NotEmpty(message = "Username is required") String username) {
+        return userRepository.findByUsername(username).isPresent();
+    }
+
+    public User saveUser(User newUser) {
+        return userRepository.save(newUser);
+    }
+
+    public List<User> findByPermission(Permission existingPermission) {
+        return userRepository.findByPermissions(existingPermission);
     }
 }

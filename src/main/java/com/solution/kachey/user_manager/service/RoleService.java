@@ -31,20 +31,8 @@ public class RoleService {
                 || Constants.ROLE_CUSTOMER.equals(role.getRoleName()) || Constants.ROLE_DEALER.equals(role.getRoleName());
     }
 
-    public Role addRole(Role role) {
-        Optional<Role> existingRole = roleRepository.findByRoleName(role.getRoleName());
-        Role newRole;
-        if (existingRole.isPresent()) {
-            newRole = existingRole.get();
-        } else {
-            newRole = new Role();
-            newRole.setRoleName(role.getRoleName());
-            newRole = roleRepository.save(newRole);
-            if (newRole.getId().isEmpty()) {
-                throw new InvalidRoleException("Role has not created");
-            }
-        }
-        return newRole;
+    public Role saveRole(Role role) {
+        return roleRepository.save(role);
     }
 
     public Role addRoleByRoleName(String roleName) {
@@ -73,5 +61,9 @@ public class RoleService {
 
     public List<Role> findAllRoles() {
         return roleRepository.findAll();
+    }
+
+    public List<Role> findByPermission(Permission existingPermission) {
+        return roleRepository.findByPermissions(existingPermission);
     }
 }
