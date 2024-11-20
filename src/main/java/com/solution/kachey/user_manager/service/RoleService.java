@@ -1,5 +1,6 @@
 package com.solution.kachey.user_manager.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -18,8 +19,8 @@ public class RoleService {
     @Autowired
     RoleRepository roleRepository;
 
-    public Role saveOrUpdate(Role role) {
-        return roleRepository.save(role);
+    public void saveOrUpdate(Role role) {
+        roleRepository.save(role);
     }
 
     // Helper method to validate role
@@ -70,5 +71,7 @@ public class RoleService {
 
     }
 
-
+    public List<Role> findAllRoles() {
+        return roleRepository.findAll();
+    }
 }

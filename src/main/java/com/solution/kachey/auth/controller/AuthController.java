@@ -26,6 +26,7 @@ import com.solution.kachey.config.jwt.JwtTokenUtil;
 import com.solution.kachey.user_manager.model.User;
 import com.solution.kachey.user_manager.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CancellationException;
@@ -104,7 +105,24 @@ public class AuthController {
 
     @PostMapping("/setup")
     public String setup() {
-        List<Permission> permissions = permissionService.setupPermission();
+        List<User> users = userService.findAllUsers();
+        for (User user : users) {
+            user.setPermissions(new ArrayList<>());  // Clear the permissions list
+            userService.saveOrUpdate(user);  // Save the updated User with no permissions
+        }
+
+        List<Role> roles = roleService.findAllRoles();
+        for (Role role : roles) {
+            role.setPermissions(new ArrayList<>());  // Clear the permissions list
+            roleService.saveOrUpdate(role);  // Save the updated User with no permissions
+        }
+
+        permissionService.deleteAllPermissions();
+        System.out.println("All old permissions deleted.");
+
+        List<Permission> permissions = permissionService.saveAllPermissions(permissionService.setupPermission());
+        System.out.println("New permissions saved: " + permissions.size());
+
         Role newRole = roleService.addRoleByRoleName(Constants.ROLE_SUPER_ADMIN);
         newRole.setPermissions(permissions);
         roleService.saveOrUpdate(newRole);
@@ -118,8 +136,8 @@ public class AuthController {
             newUser.setPassword("1234");
             newUser.setEmails(List.of("super_admin@kachey.com"));
         }
-        newUser.setPermissions(permissions);
         newUser.setRole(newRole);
+        newUser.setPermissions(permissions);
         userService.saveOrUpdate(newUser);
         return "User " + newUser.getUsername() + " has registered successfully!";
     }

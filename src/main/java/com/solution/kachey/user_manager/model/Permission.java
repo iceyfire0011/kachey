@@ -19,7 +19,6 @@ public class Permission {
     @Indexed(unique = true) // Creates a unique index on this field in MongoDB
     private String permissionName;
     @NotEmpty(message = "API URL is required")
-    @Indexed(unique = true) // Creates a unique index on this field in MongoDB
     private String apiUrl;
     @NotEmpty(message = "API method is required")
     private String apiMethod;
