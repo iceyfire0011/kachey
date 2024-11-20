@@ -2,7 +2,9 @@ package com.solution.kachey.user_manager.service;
 
 import com.solution.kachey.user_manager.model.Permission;
 import com.solution.kachey.user_manager.model.Role;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -74,27 +76,6 @@ public class UserService implements UserDetailsService {
     }
 
     // Combine role-based and user-specific permissions
-    public List<Permission> addEffectivePermissions(User user, List<Permission> permissions) {
-        if (!permissions.isEmpty()) {
-            user.setPermissions(permissions);
-            return user.getPermissions();
-        }
-        if (user.getPermissions().isEmpty()) {
-            Role role = user.getRole();
-            user.setPermissions(role.getPermissions());
-            return user.getPermissions();
-        }
-        return user.getPermissions();
-    }
-
-    public void saveOrUpdate(User user) {
-        userRepository.save(user);
-    }
-
-    public List<User> findAllUsers() {
-        return userRepository.findAll();
-    }
-
     public boolean existsByUsername(@NotEmpty(message = "Username is required") String username) {
         return userRepository.findByUsername(username).isPresent();
     }
@@ -105,5 +86,24 @@ public class UserService implements UserDetailsService {
 
     public List<User> findByPermission(Permission existingPermission) {
         return userRepository.findByPermissions(existingPermission);
+    }
+
+    public Optional<User> findByUsernameOrEmailOrPhoneNumber(@NotEmpty(message = "Username is required") String username, @Email(message = "Invalid email format") String email, @Pattern(
+            regexp = "^\\+880(17|15|19|13|16|18|14)\\d{8,9}$",
+            message = "Invalid phone number format"
+    ) String phoneNumber) {
+        if (username != null && !username.isEmpty()) {
+            return userRepository.findByUsername(username);
+        }
+
+        if (email != null && !email.isEmpty()) {
+            return userRepository.findByEmails(email);
+        }
+
+        if (phoneNumber != null && !phoneNumber.isEmpty()) {
+            return userRepository.findByPhoneNumbers(phoneNumber);
+        }
+
+        return Optional.empty();
     }
 }

@@ -1,8 +1,9 @@
 package com.solution.kachey.auth.controller;
 
 import com.solution.kachey.auth.model.JwtResponse;
+import com.solution.kachey.auth.view_model.LoginRequest;
 import com.solution.kachey.auth.view_model.RegisterRequest;
-import com.solution.kachey.config.exception.GlobalExceptionHandler;
+import com.solution.kachey.config.default_model.UserConfig;
 import com.solution.kachey.user_manager.Constants;
 import com.solution.kachey.user_manager.exception.InvalidRoleException;
 import com.solution.kachey.user_manager.model.Permission;
@@ -17,6 +18,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,15 +31,11 @@ import com.solution.kachey.user_manager.service.UserService;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
-
-    @Autowired
-    private GlobalExceptionHandler globalExceptionHandler;
 
     @Autowired
     private UserService userService;
@@ -47,8 +46,12 @@ public class AuthController {
     @Autowired
     private PermissionService permissionService;
 
+    @Autowired
+    private UserConfig userConfig;
+
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 
     public AuthController(AuthenticationManager authenticationManager, JwtTokenUtil jwtTokenUtil) {
@@ -75,28 +78,32 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User user) {
-        Optional<User> optionalUser = userService.findByUsername(user.getUsername());
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        // Find the user by username, email, or phone number
+        Optional<User> optionalUser = userService.findByUsernameOrEmailOrPhoneNumber(
+                request.getUsername(), request.getEmail(), request.getPhoneNumber()
+        );
+
         if (optionalUser.isEmpty()) {
             throw new UsernameNotFoundException("User does not exist!");
         }
 
+        User loggedInUser = optionalUser.get();
+
+        // Authenticate the user
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+                new UsernamePasswordAuthenticationToken(loggedInUser.getUsername(), request.getPassword())
         );
 
+        // Generate JWT token
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String token = jwtTokenUtil.generateToken(userDetails);
 
         return ResponseEntity.ok(new JwtResponse(
                 token,
-                user.getUsername(),
-                Constants.ROLE_SUPER_ADMIN.equals(user.getRole().getRoleName())
-                        ? user.getRole().getRoleName()
-                        : user.getPermissions().stream()
-                        .map(Permission::getPermissionName)
-                        .distinct()
-                        .collect(Collectors.joining(", "))
+                loggedInUser.getUsername(),
+                loggedInUser.getPermissions(),
+                loggedInUser.getRole()
         ));
     }
 
@@ -165,16 +172,16 @@ public class AuthController {
         roleService.saveRole(superAdminRole);
 
         // Step 7: Create or update admin user
-        User adminUser = userService.findByUsername("admin")
+        User adminUser = userService.findByUsername("super_admin")
                 .orElseGet(() -> {
                     User newUser = new User();
-                    newUser.setUsername("admin");
-                    newUser.setPassword("1234"); // Ensure password hashing
-                    newUser.setEmails(List.of("admin@kachey.com"));
                     return userService.saveUser(newUser);
                 });
-
         // Assign SUPER_ADMIN role and permissions to admin user
+        String adminUserId =adminUser.getId();
+        modelMapper.map(userConfig,adminUser);
+        adminUser.setId(adminUserId);
+        adminUser.setPassword(passwordEncoder.encode(userConfig.getPassword()));
         adminUser.setRole(superAdminRole);
         adminUser.setPermissions(allPermissions);
         userService.saveUser(adminUser);

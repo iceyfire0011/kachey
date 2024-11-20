@@ -1,29 +1,19 @@
 package com.solution.kachey.auth.model;
 
 import com.solution.kachey.user_manager.model.Permission;
+import com.solution.kachey.user_manager.model.Role;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
-import java.util.Set;
 
 @Data
+@AllArgsConstructor
 public class JwtResponse {
     private String token;
     private String username;
-    private Set<Permission> permission;
-    private String roleName;
-
-    public JwtResponse(String token, String username, Set<Permission> permission) {
-        this.token = token;
-        this.username = username;
-        this.permission = permission;
-    }
-
-    public JwtResponse(String token, String username, String roleName) {
-        this.token = token;
-        this.username = username;
-        this.roleName = roleName;
-    }
+    private List<Permission> permissions;
+    private Role role;
 
     // Getters and Setters
 }

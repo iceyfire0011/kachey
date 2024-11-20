@@ -22,20 +22,11 @@ public class PermissionService {
 
     public Permission savePermission(Permission permission) {
 
-       return permissionRepository.save(permission);
+        return permissionRepository.save(permission);
     }
 
     public List<Permission> allPermissionList() {
         return permissionRepository.findAll();
-    }
-
-    public List<Permission> setupPermissions() {
-        return List.of(
-                new Permission("permission-list", "/api/permission/list", "GET", true, ""),
-                new Permission("edit-permission", "/api/permission/edit-permission", "GET", false, ""),
-                new Permission("edit-permission-submit", "/api/permission/edit-permission", "PATCH", false, ""),
-                new Permission("edit-permission-replace", "/api/permission/edit-permission", "PUT", false, "")
-        );
     }
 
     public Permission findByPermissionName(@NotEmpty(message = "Permission name is required") String permissionName) {
@@ -55,4 +46,17 @@ public class PermissionService {
     public void deletePermission(Permission existingPermission) {
         permissionRepository.delete(existingPermission);
     }
+
+    public List<Permission> setupPermissions() {
+        return List.of(
+                new Permission("permission-list", "/api/permission/list", "GET", true, ""),
+                new Permission("edit-permission", "/api/permission/edit-permission", "GET", false, ""),
+                new Permission("edit-permission-submit", "/api/permission/edit-permission", "PATCH", false, ""),
+                new Permission("edit-permission-replace", "/api/permission/edit-permission", "PUT", false, ""),
+                new Permission("view-profile", "/api/user/profile", "GET", false, ""),
+                new Permission("edit-profile", "/api/user/edit-profile", "GET", false, ""),
+                new Permission("update-profile", "/api/user/update-profile", "GET", false, "")
+        );
+    }
+
 }

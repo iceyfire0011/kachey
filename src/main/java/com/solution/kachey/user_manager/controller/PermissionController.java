@@ -16,10 +16,11 @@ public class PermissionController {
 
     @PostMapping("/add-permission")
     public String addPermission(@RequestBody Permission permission) {
-        if (permissionService.isPermissionExist(permission)) {
-            return "Permission already exists!";
-        }
-        Permission newPermission = permissionService.savePermission(permission);
-        return "New Permission \"" + newPermission.getPermissionName() + "\" has added successfully!";
+//        if (permissionService.isPermissionExist(permission)) {
+//            return "Permission already exists!";
+//        }
+//        Permission newPermission = permissionService.savePermission(permission);
+//        return "New Permission \"" + newPermission.getPermissionName() + "\" has added successfully!";
+        return "Okay";
     }
 }

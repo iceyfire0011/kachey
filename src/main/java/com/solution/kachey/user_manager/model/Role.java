@@ -3,7 +3,6 @@ package com.solution.kachey.user_manager.model;
 import java.util.List;
 
 import lombok.NoArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
